@@ -5,7 +5,7 @@ function initializeBoard () {
         [0,0,0],
     ];
 }
-function play () {
+function changeBoard () {
     let GameBoard = initializeBoard ();
     //Token "1" is for player 1 and token "2" is for player2
     const playMove = (player, move) => {
@@ -31,9 +31,12 @@ function inputAndCheckMove () {
     const board = initializeBoard();
     const maxRows = board.length;
     const maxColumns = board[0].length;
-    const takeMoveFromInput = (board) => {
-        let row = prompt("Enter row: ");
-        let column = prompt("Enter column: ");
+    const takeMoveFromInput = (board,[row,column]) => {
+        /*
+        ////The commented sections are controllers for console game
+        ////Not the DOM
+        // let row = prompt("Enter row: ");
+        // let column = prompt("Enter column: ");
         if (!Number.isInteger(+row)) {
             return "invalidRow";
         }
@@ -56,11 +59,13 @@ function inputAndCheckMove () {
             board[+row-1][+column-1] === 0){
                 return {row,column};
             }
+        */
+        
         return false;
     }
     return {takeMoveFromInput};
 }
-const updateBoard = (function () {
+const gameController = (function () {
     // const player1 = "player1";
     // const player2 = "player2";
     const players = [
@@ -74,7 +79,7 @@ const updateBoard = (function () {
         },
     ];
     let activePlayer = players[0];
-    const board = play()
+    const board = changeBoard()
     const switchPlayerTurn = () => {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     }
@@ -102,9 +107,9 @@ const updateBoard = (function () {
                 break;
         }
     }
-    const playRound = () => {
+    const playRound = ([row, column, playerTurn]) => {
         //If encounters error, rowAndColumn is a string indicating the error
-        const rowAndColumn = inputAndCheckMove().takeMoveFromInput(board.getBoard());
+        // const rowAndColumn = inputAndCheckMove().takeMoveFromInput(board.getBoard());
         if (typeof rowAndColumn === "string") {
             printInvalidMove(rowAndColumn);
         } else if (rowAndColumn !== false) {
@@ -191,3 +196,6 @@ const updateBoard = (function () {
     printNewRound();
     return {playRound,getActivePlayer};
 })();
+function ScreenController () {
+    const board = gameController();
+}
