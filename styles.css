@@ -1,0 +1,31 @@
+:root {
+    font-size: 36px;
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
+}
+div.container {
+    padding-top: 10vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    > div.player-section{
+        display: flex;
+        flex-direction: row;
+        column-gap: 10vh;
+        > div.player {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            row-gap: 3vh;
+            > :nth-child(2) {
+                font-size: 3rem;
+            }
+        }    
+    }
+    > div.game-section {
+        display: grid;
+        grid-template: repeat(3,100px) / repeat(3,100px);
+    }
+}
