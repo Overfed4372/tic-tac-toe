@@ -4,6 +4,7 @@ function initializeBoard () {
         [0,0,0], 
         [0,0,0],
     ];
+
 }
 function changeBoard () {
     let gameBoard = initializeBoard ();
@@ -235,6 +236,17 @@ const gameController = (function () {
 (function ScreenController () {
     const game = gameController();
     const boardInitialStructure = initializeBoard();
+    const createFields = ( () => {
+        const gameSection = document.querySelector("div.container > div.game-section > div.fields");
+        let fieldNumber = boardInitialStructure.length * boardInitialStructure[0].length;
+        console.log(fieldNumber);
+        const field = document.createElement("button");
+        field.classList.add("field");
+        for (let i=0; i<fieldNumber; i++) {
+            gameSection.innerHTML+="<button class='field'></button>";
+        } 
+    } )();
+
     function updateScreen () {
         const board = game.board();
         const activePlayer = game.getActivePlayer();
@@ -257,12 +269,18 @@ const gameController = (function () {
         // console.log(winner);
         if (winner) {
             if (winner.name === "draw") resultSection.textContent = "The game is a draw!";
-            else resultSection.textContent = `${winner.name} won the game!`;
+            else {
+                let capitalizedName = winner.name.charAt(0).toUpperCase() + winner.name.slice(1);
+                resultSection.textContent = `${capitalizedName} won the game!`;
+            }
+            playerTurnSection.textContent = "";
         } else {
             resultSection.textContent = "";
         }
     }
     //Sorting button nodes as row and column arrays [ [...], [...], ... , [...]]
+
+    
     const btnSorted = (() => {
         //All the lines in this function are about to
         //put button nodes into a structured [row*column] array
@@ -278,6 +296,8 @@ const gameController = (function () {
         }
         return bttnArr;
     })();
+    
+
     //Reset button
     const resetBtn = document.querySelector("div.game-section > div.reset > button");
     //Initial screen updating
