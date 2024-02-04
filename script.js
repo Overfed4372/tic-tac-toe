@@ -9,7 +9,6 @@ function changeBoard () {
     let gameBoard = initializeBoard ();
     //Token "1" is for player 1 and token "2" is for player2
     const playMove = (player, move) => {
-        console.log(move);
         const tokenOneOrTwo = player === "player1" ? 1 : 2;
         const row = move.row;
         const column = move.column;
@@ -80,14 +79,15 @@ const gameController = (function () {
     ];
     let activePlayer = players[0];
     let winner = false;
+    let gameEndedOrNot;
     const board = changeBoard()
     const switchPlayerTurn = () => {
         activePlayer = activePlayer === players[0] ? players[1] : players[0];
     }
     const getActivePlayer = () => activePlayer;
     const printNewRound = () => {
-        console.log(`${getActivePlayer().name}'s turn \n`);
-        console.table(board.getBoard());
+        // console.log(`${getActivePlayer().name}'s turn \n`);
+        // console.table(board.getBoard());
     }
     /*
     const printInvalidMove = (errorType) => {
@@ -115,17 +115,27 @@ const gameController = (function () {
         // const rowAndColumn = inputAndCheckMove().takeMoveFromInput(board.getBoard());
         // if (typeof rowAndColumn === "string") {
         //     printInvalidMove(rowAndColumn);
-        console.log([row,column]);
+        // console.log([row,column]);
         board.playMove(activePlayer.name, {row,column});
-        let winner = checkWinner();
+        checkWinner();
         switchPlayerTurn();
         printNewRound();
         if (winner !== false) {
-            console.log(`${winner.name} won the game!`);
-            board.resetBoard();
+            // console.log(`${winner.name} won the game!`);
+            // board.resetBoard();
             activePlayer = players[0];
         }
+    }
+    const resetBoard = () => {
+        board.resetBoard();
+        winner = false;
+        gameEndedOrNot = false;
+    }
+    const getWinner = () => {
         return winner;
+    }
+    const getGameEndedOrNot = () => {
+        return gameEndedOrNot;
     }
     const checkWinner = () => {
         const boardStatus = board.getBoard();
@@ -193,7 +203,7 @@ const gameController = (function () {
             boardStatus.forEach (
                 (row) => { 
                     let rowEmptyFields = row.filter( (field) => field === 0 );
-                    console.log("khhoeu", rowEmptyFields);
+                    // console.log("khhoeu", rowEmptyFields);
                     emptyFieldsCounter += rowEmptyFields.length;
                 }
             )
@@ -202,31 +212,61 @@ const gameController = (function () {
             }
         }
         )();
-        
+        if (winnerSign) gameEndedOrNot = true;
         if (winnerSign === players[0].sign) {
-            return players[0]
+            winner = players[0]
         } else if (winnerSign === players[1].sign) {
-            return players[1];
+            winner = players[1];
         } else if (winnerSign === 0){
-            return {name: "draw", sign:0};
+            winner = {name: "draw", sign:0};
         } else {
-            return false
+            winner = false
         }
     }
     //Initialize
-    printNewRound();
+    // printNewRound();
     return {board: board.getBoard
         ,playRound
-        ,getActivePlayer};
+        ,getActivePlayer
+        ,resetBoard
+        ,getWinner
+        ,getGameEndedOrNot};
 });
 (function ScreenController () {
     const game = gameController();
     const boardInitialStructure = initializeBoard();
-    let winner;
-    const bttnSorted = (() => {
+    function updateScreen () {
+        const board = game.board();
+        const activePlayer = game.getActivePlayer();
+        const winner = game.getWinner();
+        // console.log(board);
+        const resultSection = document.querySelector("div.container > div.result-section > div.result");
+        const playerTurnSection = document.querySelector("div.container > div.result-section > div.player-turn");
+        
+        board.forEach ( (row, rowIndex) => {
+            row.forEach ( (field, colIndex) => {
+                if (field === 1) btnSorted[rowIndex][colIndex].innerText = "X";
+                if (field === 2) btnSorted[rowIndex][colIndex].innerText = "O"; 
+                if (field === 0) btnSorted[rowIndex][colIndex].innerText = ""; 
+            } )
+        } );
+        
+        playerTurnSection.textContent = activePlayer.name === "player1" ? "Player1's turn" :
+        activePlayer.name === "player2" ? "Player2's turn" : "";
+
+        // console.log(winner);
+        if (winner) {
+            if (winner.name === "draw") resultSection.textContent = "The game is a draw!";
+            else resultSection.textContent = `${winner.name} won the game!`;
+        } else {
+            resultSection.textContent = "";
+        }
+    }
+    //Sorting button nodes as row and column arrays [ [...], [...], ... , [...]]
+    const btnSorted = (() => {
         //All the lines in this function are about to
         //put button nodes into a structured [row*column] array
-        const bttnNodes = document.querySelectorAll("div.game-section > button");
+        const bttnNodes = document.querySelectorAll("div.game-section > div.fields > button");
         const bttnArr=[];
         let counter = 0;
         for (let i=0; i<boardInitialStructure.length; i++) {
@@ -238,44 +278,32 @@ const gameController = (function () {
         }
         return bttnArr;
     })();
+    //Reset button
+    const resetBtn = document.querySelector("div.game-section > div.reset > button");
+    //Initial screen updating
+    updateScreen();
+    //Functionality for buttons
     (function addBtnfunctionality() {
-        bttnSorted.forEach( (bttnRow,rowIndex) => {
-            bttnRow.forEach( (bttn,colIndex) => {
-                bttn.addEventListener( "click", (event)=>{
-                    if (bttn.innerText === "") {
-                        winner=game.playRound([rowIndex,colIndex]);
-                        console.log(game.board());
-                        updateScreen();
-                    } else {
-                        window.alert("Pick another sopt!");
+        btnSorted.forEach( (bttnRow,rowIndex) => {
+            bttnRow.forEach( (btn,colIndex) => {
+                btn.addEventListener( "click", (event)=>{
+                    // console.log(gameEndedOrNot);
+                    if (!game.getGameEndedOrNot()) { 
+                        if (game.board()[rowIndex][colIndex] === 0) {
+                            game.playRound([rowIndex,colIndex]);
+                            updateScreen();
+                            // console.log("winner", winner);
+                        } else {
+                            window.alert("Pick another sopt!");
+                        }
                     }
-                    
                 } )
             })
         })
+        resetBtn.addEventListener( "click", (event) => {
+            game.resetBoard(); 
+            // console.log(game.getWinner());
+            updateScreen();
+        })
     })();
-    function updateScreen () {
-        const board = game.board();
-        const activePlayer = game.getActivePlayer();
-        // console.log(board);
-        const resultSection = document.querySelector("div.container > div.result-section > div.result");
-        const playerTurnSection = document.querySelector("div.container > div.result-section > div.player-turn");
-
-        board.forEach ( (row, rowIndex) => {
-            row.forEach ( (field, colIndex) => {
-                if (field === 1) bttnSorted[rowIndex][colIndex].innerText = "X";
-                if (field === 2) bttnSorted[rowIndex][colIndex].innerText = "O"; 
-                if (field === 0) bttnSorted[rowIndex][colIndex].innerText = ""; 
-            } )
-        } );
-        
-        playerTurnSection.textContent = activePlayer.name === "player1" ? "Player1's turn" :
-        activePlayer.name === "player2" ? "Player2's turn" : "";
-
-        console.log(winner);
-        if (winner !== false) {
-            if (winner.name === "draw") resultSection.textContent = "The game is a draw!";
-            else resultSection.textContent = `${winner.name} won the game!`;
-        }
-    }
 })();
