@@ -131,6 +131,7 @@ const gameController = (function () {
         board.resetBoard();
         winner = false;
         gameEndedOrNot = false;
+        activePlayer = players[0];
     }
     const getWinner = () => {
         return winner;
